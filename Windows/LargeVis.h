@@ -8,14 +8,11 @@
 #include <vector>
 
 #include <boost/thread.hpp>
-#include <boost/random.hpp>
-#include <boost/random/linear_congruential.hpp>
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/variate_generator.hpp>
+#include <random>
+#include <tr1/random>
 
-#include "ANNOY\annoylib.h"
-#include "ANNOY\kissrandom.h"
+#include "ANNOY/annoylib.h"
+#include "ANNOY/kissrandom.h"
 
 typedef float real;
 
@@ -36,9 +33,9 @@ class LargeVis{
   long long *alias;
   real *prob;
 
-  static boost::minstd_rand generator;
-  static boost::uniform_real<> uni_dist;
-  static boost::variate_generator<boost::minstd_rand&, boost::uniform_real<> > uni;
+  static std::minstd_rand generator;
+  static std::uniform_real_distribution<> uni_dist;
+  static std::variate_generator<std::minstd_rand&, std::uniform_real_distribution<> > uni;
 
   void clean_model();
   void clean_data();
@@ -65,7 +62,16 @@ class LargeVis{
   void load_from_graph(char *infile);
   void load_from_data(real *data, long long n_vert, long long n_di);
   void save(char *outfile);
-  void run(long long out_d = -1, long long n_thre = -1, long long n_samp = -1, long long n_prop = -1, real alph = -1, long long n_tree = -1, long long n_nega = -1, long long n_neig = -1, real gamm = -1, real perp = -1);
+  void run(long long out_d = -1,
+           long long n_thre = -1,
+           long long n_samp = -1,
+           long long n_prop = -1,
+           real alph = -1,
+           long long n_tree = -1,
+           long long n_nega = -1,
+           long long n_neig = -1,
+           real gamm = -1,
+           real perp = -1);
   real *get_ans();
   long long get_n_vertices();
   long long get_out_dim();

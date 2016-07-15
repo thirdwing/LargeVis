@@ -26,8 +26,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __MINGW32__
 #include "mman.h"
-#include <Windows.h>
+#include <windows.h>
+#else
+#include <sys/mman.h>
+#endif
+
 #include <string.h>
 #include <math.h>
 #include <vector>
@@ -38,14 +43,14 @@
 // This allows others to supply their own logger / error printer without
 // requiring Annoy to import their headers. See RcppAnnoy for a use case.
 #ifndef __ERROR_PRINTER_OVERRIDE__
-  #define showUpdate(...) { fprintf(stderr, __VA_ARGS__ ); }
+#define showUpdate(...) { fprintf(stderr, __VA_ARGS__ ); }
 #else
-  #define showUpdate(...) { __ERROR_PRINTER_OVERRIDE__( __VA_ARGS__ ); }
+#define showUpdate(...) { __ERROR_PRINTER_OVERRIDE__( __VA_ARGS__ ); }
 #endif
 
 #ifndef ANNOY_NODE_ATTRIBUTE
-  #define ANNOY_NODE_ATTRIBUTE __attribute__((__packed__))
-  // TODO: this is turned on by default, but may not work for all architectures! Need to investigate.
+#define ANNOY_NODE_ATTRIBUTE __attribute__((__packed__))
+// TODO: this is turned on by default, but may not work for all architectures! Need to investigate.
 #endif
 
 
@@ -218,7 +223,7 @@ class AnnoyIndexInterface {
 };
 
 template<typename S, typename T, template<typename, typename, typename> class Distance, class Random>
-  class AnnoyIndex : public AnnoyIndexInterface<S, T> {
+class AnnoyIndex : public AnnoyIndexInterface<S, T> {
   /*
    * We use random projection to build a forest of binary trees of all items.
    * Basically just split the hyperspace into two sides by a hyperplane,
@@ -226,7 +231,7 @@ template<typename S, typename T, template<typename, typename, typename> class Di
    * We create a tree like this q times. The default q is determined automatically
    * in such a way that we at most use 2x as much memory as the vectors take.
    */
-protected:
+ protected:
   typedef Distance<S, T, Random> D;
   typedef typename D::Node Node;
 
@@ -241,7 +246,7 @@ protected:
   S _K;
   bool _loaded;
   bool _verbose;
-public:
+ public:
 
   AnnoyIndex(int f) : _random() {
     _f = f;
@@ -309,8 +314,8 @@ public:
       return false;
 
     //fwrite(_nodes, _s, _n_nodes, f);
-	for (long long i = 0; i < _n_nodes; ++i)
-		fwrite((void*)((char*)_nodes + i * _s), _s, 1, f);
+    for (long long i = 0; i < _n_nodes; ++i)
+      fwrite((void*)((char*)_nodes + i * _s), _s, 1, f);
 
     fclose(f);
 
@@ -344,7 +349,7 @@ public:
     if (fd == -1)
       return false;
     long long size = _lseeki64(fd, 0, SEEK_END);
-//	printf("File size %lld\n", size);
+    //	printf("File size %lld\n", size);
 #ifdef MAP_POPULATE
     _nodes = (Node*)mmap(
         0, size, PROT_READ, MAP_SHARED | MAP_POPULATE, fd, 0);
@@ -399,7 +404,7 @@ public:
       v->push_back(m->v[z]);
   }
 
-protected:
+ protected:
   void _allocate_size(S n) {
     if (n > _nodes_size) {
       S new_nodes_size = (_nodes_size + 1) * 2;
@@ -532,7 +537,7 @@ protected:
       } else {
         T margin = D::margin(nd, v, _f);
         q.push(make_pair((std::min)(d, +margin), nd->children[1]));
-		q.push(make_pair((std::min)(d, -margin), nd->children[0]));
+        q.push(make_pair((std::min)(d, -margin), nd->children[0]));
       }
     }
 
@@ -554,7 +559,7 @@ protected:
     std::partial_sort(&nns_dist[0], &nns_dist[p], &nns_dist[m]);
     for (size_t i = 0; i < p; i++) {
       if (distances)
-	distances->push_back(D::normalized_distance(nns_dist[i].first));
+        distances->push_back(D::normalized_distance(nns_dist[i].first));
       result->push_back(nns_dist[i].second);
     }
   }
